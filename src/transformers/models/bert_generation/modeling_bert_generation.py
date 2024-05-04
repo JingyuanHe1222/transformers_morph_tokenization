@@ -192,18 +192,11 @@ class BertGenerationSelfAttention(nn.Module):
         return outputs
 
 
-BERT_GENERATION_SELF_ATTENTION_CLASSES = {
-    "eager": BertGenerationSelfAttention,
-}
-
-
-# Copied from transformers.models.bert.modeling_bert.BertAttention with Bert->BertGeneration,BERT->BERT_GENERATION
+# Copied from transformers.models.bert.modeling_bert.BertAttention with Bert->BertGeneration
 class BertGenerationAttention(nn.Module):
     def __init__(self, config, position_embedding_type=None):
         super().__init__()
-        self.self = BERT_GENERATION_SELF_ATTENTION_CLASSES[config._attn_implementation](
-            config, position_embedding_type=position_embedding_type
-        )
+        self.self = BertGenerationSelfAttention(config, position_embedding_type=position_embedding_type)
         self.output = BertGenerationSelfOutput(config)
         self.pruned_heads = set()
 

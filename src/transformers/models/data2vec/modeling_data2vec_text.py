@@ -298,18 +298,11 @@ class Data2VecTextSelfOutput(nn.Module):
         return hidden_states
 
 
-DATA2VEC_TEXT_SELF_ATTENTION_CLASSES = {
-    "eager": Data2VecTextSelfAttention,
-}
-
-
-# Copied from transformers.models.bert.modeling_bert.BertAttention with Bert->Data2VecText,BERT->DATA2VEC_TEXT
+# Copied from transformers.models.bert.modeling_bert.BertAttention with Bert->Data2VecText
 class Data2VecTextAttention(nn.Module):
     def __init__(self, config, position_embedding_type=None):
         super().__init__()
-        self.self = DATA2VEC_TEXT_SELF_ATTENTION_CLASSES[config._attn_implementation](
-            config, position_embedding_type=position_embedding_type
-        )
+        self.self = Data2VecTextSelfAttention(config, position_embedding_type=position_embedding_type)
         self.output = Data2VecTextSelfOutput(config)
         self.pruned_heads = set()
 
@@ -734,7 +727,7 @@ class Data2VecTextModel(Data2VecTextPreTrainedModel):
         output_type=BaseModelOutputWithPoolingAndCrossAttentions,
         config_class=_CONFIG_FOR_DOC,
     )
-    # Copied from transformers.models.clap.modeling_clap.ClapTextModel.forward
+    # Copied from transformers.models.bert.modeling_bert.BertModel.forward
     def forward(
         self,
         input_ids: Optional[torch.Tensor] = None,

@@ -36,15 +36,12 @@ from ..models.auto.configuration_auto import AutoConfig
 from ..tokenization_utils import PreTrainedTokenizer
 from ..utils import (
     ModelOutput,
-    PushToHubMixin,
     add_end_docstrings,
-    copy_func,
     infer_framework,
     is_tf_available,
     is_torch_available,
     is_torch_cuda_available,
     is_torch_mlu_available,
-    is_torch_mps_available,
     is_torch_npu_available,
     is_torch_xpu_available,
     logging,
@@ -783,7 +780,7 @@ if is_torch_available():
 
 
 @add_end_docstrings(build_pipeline_init_args(has_tokenizer=True, has_feature_extractor=True, has_image_processor=True))
-class Pipeline(_ScikitCompat, PushToHubMixin):
+class Pipeline(_ScikitCompat):
     """
     The Pipeline class is the class from which all pipelines inherit. Refer to this class for methods shared across
     different pipelines.
@@ -863,8 +860,6 @@ class Pipeline(_ScikitCompat, PushToHubMixin):
                 self.device = torch.device(f"npu:{device}")
             elif is_torch_xpu_available(check_device=True):
                 self.device = torch.device(f"xpu:{device}")
-            elif is_torch_mps_available():
-                self.device = torch.device(f"mps:{device}")
             else:
                 raise ValueError(f"{device} unrecognized or not available.")
         else:
@@ -888,6 +883,11 @@ class Pipeline(_ScikitCompat, PushToHubMixin):
             if self.model.can_generate():
                 self.model.generation_config.update(**task_specific_params.get(task))
 
+        self.call_count = 0
+        self._batch_size = kwargs.pop("batch_size", None)
+        self._num_workers = kwargs.pop("num_workers", None)
+        self._preprocess_params, self._forward_params, self._postprocess_params = self._sanitize_parameters(**kwargs)
+
         # Pipelines calling `generate`: if the tokenizer has a pad token but the model doesn't, set it in the
         # forward params so that `generate` is aware of the pad token.
         if (
@@ -896,12 +896,7 @@ class Pipeline(_ScikitCompat, PushToHubMixin):
             and self.tokenizer.pad_token_id is not None
             and self.model.generation_config.pad_token_id is None
         ):
-            self.model.generation_config.pad_token_id = self.tokenizer.pad_token_id
-
-        self.call_count = 0
-        self._batch_size = kwargs.pop("batch_size", None)
-        self._num_workers = kwargs.pop("num_workers", None)
-        self._preprocess_params, self._forward_params, self._postprocess_params = self._sanitize_parameters(**kwargs)
+            self._forward_params["pad_token_id"] = self.tokenizer.pad_token_id
 
         if self.image_processor is None and self.feature_extractor is not None:
             if isinstance(self.feature_extractor, BaseImageProcessor):
@@ -910,36 +905,16 @@ class Pipeline(_ScikitCompat, PushToHubMixin):
                 # then we should keep working
                 self.image_processor = self.feature_extractor
 
-    def save_pretrained(
-        self,
-        save_directory: Union[str, os.PathLike],
-        safe_serialization: bool = True,
-        **kwargs,
-    ):
+    def save_pretrained(self, save_directory: str, safe_serialization: bool = True):
         """
         Save the pipeline's model and tokenizer.
 
         Args:
-            save_directory (`str` or `os.PathLike`):
+            save_directory (`str`):
                 A path to the directory where to saved. It will be created if it doesn't exist.
             safe_serialization (`str`):
                 Whether to save the model using `safetensors` or the traditional way for PyTorch or Tensorflow.
-            kwargs (`Dict[str, Any]`, *optional*):
-                Additional key word arguments passed along to the [`~utils.PushToHubMixin.push_to_hub`] method.
         """
-        use_auth_token = kwargs.pop("use_auth_token", None)
-
-        if use_auth_token is not None:
-            warnings.warn(
-                "The `use_auth_token` argument is deprecated and will be removed in v5 of Transformers. Please use `token` instead.",
-                FutureWarning,
-            )
-            if kwargs.get("token", None) is not None:
-                raise ValueError(
-                    "`token` and `use_auth_token` are both specified. Please set only the argument `token`."
-                )
-            kwargs["token"] = use_auth_token
-
         if os.path.isfile(save_directory):
             logger.error(f"Provided path ({save_directory}) should be a directory, not a file")
             return
@@ -966,17 +941,16 @@ class Pipeline(_ScikitCompat, PushToHubMixin):
             # Save the pipeline custom code
             custom_object_save(self, save_directory)
 
-        kwargs["safe_serialization"] = safe_serialization
-        self.model.save_pretrained(save_directory, **kwargs)
+        self.model.save_pretrained(save_directory, safe_serialization=safe_serialization)
 
         if self.tokenizer is not None:
-            self.tokenizer.save_pretrained(save_directory, **kwargs)
+            self.tokenizer.save_pretrained(save_directory)
 
         if self.feature_extractor is not None:
-            self.feature_extractor.save_pretrained(save_directory, **kwargs)
+            self.feature_extractor.save_pretrained(save_directory)
 
         if self.image_processor is not None:
-            self.image_processor.save_pretrained(save_directory, **kwargs)
+            self.image_processor.save_pretrained(save_directory)
 
         if self.modelcard is not None:
             self.modelcard.save_pretrained(save_directory)
@@ -1204,6 +1178,7 @@ class Pipeline(_ScikitCompat, PushToHubMixin):
             logger.warning_once(
                 "You seem to be using the pipelines sequentially on GPU. In order to maximize efficiency please use a"
                 " dataset",
+                UserWarning,
             )
 
         is_dataset = Dataset is not None and isinstance(inputs, Dataset)
@@ -1255,13 +1230,6 @@ class Pipeline(_ScikitCompat, PushToHubMixin):
         # easy solution.
         for input_ in inputs:
             yield self.run_single(input_, preprocess_params, forward_params, postprocess_params)
-
-
-Pipeline.push_to_hub = copy_func(Pipeline.push_to_hub)
-if Pipeline.push_to_hub.__doc__ is not None:
-    Pipeline.push_to_hub.__doc__ = Pipeline.push_to_hub.__doc__.format(
-        object="pipe", object_class="pipeline", object_files="pipeline file"
-    ).replace(".from_pretrained", "")
 
 
 class ChunkPipeline(Pipeline):

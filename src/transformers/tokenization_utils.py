@@ -608,6 +608,7 @@ class PreTrainedTokenizer(PreTrainedTokenizerBase):
         # ["This is something", "<special_token_1>", "else"]
         tokenized_text = []
         for token in tokens:
+            # print(token, end=' ') ###
             # Need to skip eventual empty (fully stripped) tokens
             if not token:
                 continue

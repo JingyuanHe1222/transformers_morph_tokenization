@@ -85,7 +85,7 @@ class MBart50Tokenizer(PreTrainedTokenizer):
     ```python
     >>> from transformers import MBart50Tokenizer
 
-    >>> tokenizer = MBart50Tokenizer.from_pretrained("facebook/mbart-large-50", src_lang="en_XX", tgt_lang="ro_RO")
+    >>> tokenizer = .from_pretrained("facebook/mbart-large-50", src_lang="en_XX", tgt_lang="ro_RO")
     >>> src_text = " UN Chief Says There Is No Military Solution in Syria"
     >>> tgt_text = "Şeful ONU declară că nu există o soluţie militară în Siria"
     >>> model_inputs = tokenizer(src_text, text_target=tgt_text, return_tensors="pt")
@@ -200,6 +200,7 @@ class MBart50Tokenizer(PreTrainedTokenizer):
         return vocab
 
     def _tokenize(self, text: str) -> List[str]:
+        print("_tokenize mbart 50")
         return self.sp_model.encode(text, out_type=str)
 
     def _convert_token_to_id(self, token: str) -> int:

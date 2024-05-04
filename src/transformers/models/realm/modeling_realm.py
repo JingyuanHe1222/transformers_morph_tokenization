@@ -368,18 +368,11 @@ class RealmSelfOutput(nn.Module):
         return hidden_states
 
 
-REALM_SELF_ATTENTION_CLASSES = {
-    "eager": RealmSelfAttention,
-}
-
-
-# Copied from transformers.models.bert.modeling_bert.BertAttention with Bert->Realm,BERT->REALM
+# Copied from transformers.models.bert.modeling_bert.BertAttention with Bert->Realm
 class RealmAttention(nn.Module):
     def __init__(self, config, position_embedding_type=None):
         super().__init__()
-        self.self = REALM_SELF_ATTENTION_CLASSES[config._attn_implementation](
-            config, position_embedding_type=position_embedding_type
-        )
+        self.self = RealmSelfAttention(config, position_embedding_type=position_embedding_type)
         self.output = RealmSelfOutput(config)
         self.pruned_heads = set()
 

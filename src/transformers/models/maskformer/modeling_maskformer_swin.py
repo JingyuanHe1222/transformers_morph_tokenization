@@ -735,7 +735,6 @@ class MaskFormerSwinPreTrainedModel(PreTrainedModel):
     base_model_prefix = "model"
     main_input_name = "pixel_values"
     supports_gradient_checkpointing = True
-    _no_split_modules = ["MaskFormerSwinStage"]
 
     def _init_weights(self, module):
         """Initialize the weights"""

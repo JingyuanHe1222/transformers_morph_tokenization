@@ -1108,7 +1108,6 @@ class GPTNeoXForCausalLM(GPTNeoXPreTrainedModel):
                 "attention_mask": attention_mask,
                 "past_key_values": past_key_values,
                 "position_ids": position_ids,
-                "use_cache": kwargs.get("use_cache"),
             }
         )
 

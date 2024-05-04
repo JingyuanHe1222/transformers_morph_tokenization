@@ -38,6 +38,10 @@ from .import_utils import (
 )
 
 
+if is_flax_available():
+    import jax.numpy as jnp
+
+
 class cached_property(property):
     """
     Descriptor that mimics @property but caches output in member variable.
@@ -620,8 +624,6 @@ def transpose(array, axes=None):
 
         return tf.transpose(array, perm=axes)
     elif is_jax_tensor(array):
-        import jax.numpy as jnp
-
         return jnp.transpose(array, axes=axes)
     else:
         raise ValueError(f"Type not supported for transpose: {type(array)}.")
@@ -641,8 +643,6 @@ def reshape(array, newshape):
 
         return tf.reshape(array, newshape)
     elif is_jax_tensor(array):
-        import jax.numpy as jnp
-
         return jnp.reshape(array, newshape)
     else:
         raise ValueError(f"Type not supported for reshape: {type(array)}.")
@@ -662,8 +662,6 @@ def squeeze(array, axis=None):
 
         return tf.squeeze(array, axis=axis)
     elif is_jax_tensor(array):
-        import jax.numpy as jnp
-
         return jnp.squeeze(array, axis=axis)
     else:
         raise ValueError(f"Type not supported for squeeze: {type(array)}.")
@@ -683,8 +681,6 @@ def expand_dims(array, axis):
 
         return tf.expand_dims(array, axis=axis)
     elif is_jax_tensor(array):
-        import jax.numpy as jnp
-
         return jnp.expand_dims(array, axis=axis)
     else:
         raise ValueError(f"Type not supported for expand_dims: {type(array)}.")

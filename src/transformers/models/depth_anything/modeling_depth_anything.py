@@ -364,14 +364,10 @@ class DepthAnythingDepthEstimationHead(nn.Module):
     DEPTH_ANYTHING_START_DOCSTRING,
 )
 class DepthAnythingForDepthEstimation(DepthAnythingPreTrainedModel):
-    _no_split_modules = ["DPTViTEmbeddings"]
-
     def __init__(self, config):
         super().__init__(config)
 
-        self.backbone = AutoBackbone.from_config(
-            config.backbone_config, attn_implementation=config._attn_implementation
-        )
+        self.backbone = AutoBackbone.from_config(config.backbone_config)
         self.neck = DepthAnythingNeck(config)
         self.head = DepthAnythingDepthEstimationHead(config)
 

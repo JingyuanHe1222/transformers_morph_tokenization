@@ -293,7 +293,6 @@ class UperNetPreTrainedModel(PreTrainedModel):
 
     config_class = UperNetConfig
     main_input_name = "pixel_values"
-    _no_split_modules = []
 
     def _init_weights(self, module):
         if isinstance(module, UperNetPreTrainedModel):

@@ -245,18 +245,11 @@ class SplinterSelfOutput(nn.Module):
         return hidden_states
 
 
-SPLINTER_SELF_ATTENTION_CLASSES = {
-    "eager": SplinterSelfAttention,
-}
-
-
-# Copied from transformers.models.bert.modeling_bert.BertAttention with Bert->Splinter,BERT->SPLINTER
+# Copied from transformers.models.bert.modeling_bert.BertAttention with Bert->Splinter
 class SplinterAttention(nn.Module):
     def __init__(self, config, position_embedding_type=None):
         super().__init__()
-        self.self = SPLINTER_SELF_ATTENTION_CLASSES[config._attn_implementation](
-            config, position_embedding_type=position_embedding_type
-        )
+        self.self = SplinterSelfAttention(config, position_embedding_type=position_embedding_type)
         self.output = SplinterSelfOutput(config)
         self.pruned_heads = set()
 

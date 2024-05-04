@@ -285,18 +285,11 @@ class ErnieSelfOutput(nn.Module):
         return hidden_states
 
 
-ERNIE_SELF_ATTENTION_CLASSES = {
-    "eager": ErnieSelfAttention,
-}
-
-
-# Copied from transformers.models.bert.modeling_bert.BertAttention with Bert->Ernie,BERT->ERNIE
+# Copied from transformers.models.bert.modeling_bert.BertAttention with Bert->Ernie
 class ErnieAttention(nn.Module):
     def __init__(self, config, position_embedding_type=None):
         super().__init__()
-        self.self = ERNIE_SELF_ATTENTION_CLASSES[config._attn_implementation](
-            config, position_embedding_type=position_embedding_type
-        )
+        self.self = ErnieSelfAttention(config, position_embedding_type=position_embedding_type)
         self.output = ErnieSelfOutput(config)
         self.pruned_heads = set()
 
@@ -794,7 +787,7 @@ class ErnieModel(ErniePreTrainedModel):
     `add_cross_attention` set to `True`; an `encoder_hidden_states` is then expected as an input to the forward pass.
     """
 
-    # Copied from transformers.models.clap.modeling_clap.ClapTextModel.__init__ with ClapText->Ernie
+    # Copied from transformers.models.bert.modeling_bert.BertModel.__init__ with Bert->Ernie
     def __init__(self, config, add_pooling_layer=True):
         super().__init__(config)
         self.config = config

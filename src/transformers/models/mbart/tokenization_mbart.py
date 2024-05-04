@@ -267,6 +267,7 @@ class MBartTokenizer(PreTrainedTokenizer):
         return vocab
 
     def _tokenize(self, text: str) -> List[str]:
+        print("_tokenize mbart")
         return self.sp_model.encode(text, out_type=str)
 
     def _convert_token_to_id(self, token):

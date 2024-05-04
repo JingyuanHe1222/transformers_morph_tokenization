@@ -506,16 +506,12 @@ class RagModel(RagPreTrainedModel):
         if question_encoder is None:
             from ..auto.modeling_auto import AutoModel
 
-            question_encoder = AutoModel.from_config(
-                config.question_encoder, attn_implementation=config._attn_implementation
-            )
+            question_encoder = AutoModel.from_config(config.question_encoder)
 
         if generator is None:
             from ..auto.modeling_auto import AutoModelForSeq2SeqLM
 
-            generator = AutoModelForSeq2SeqLM.from_config(
-                config.generator, attn_implementation=config._attn_implementation
-            )
+            generator = AutoModelForSeq2SeqLM.from_config(config.generator)
 
         self.retriever = retriever
         if self.retriever is not None:
@@ -1537,10 +1533,6 @@ class RagTokenForGeneration(RagPreTrainedModel):
             logits_processor=logits_processor,
         )
 
-        prepared_stopping_criteria = self._get_stopping_criteria(
-            generation_config=generation_config, stopping_criteria=stopping_criteria
-        )
-
         if generation_config.num_beams == 1:
             if generation_config.num_return_sequences > 1:
                 raise ValueError(
@@ -1550,10 +1542,9 @@ class RagTokenForGeneration(RagPreTrainedModel):
             return self._greedy_search(
                 input_ids,
                 logits_processor=pre_processor,
-                stopping_criteria=prepared_stopping_criteria,
-                generation_config=generation_config,
-                synced_gpus=False,
-                streamer=None,
+                max_length=generation_config.max_length,
+                pad_token_id=generation_config.pad_token_id,
+                eos_token_id=generation_config.eos_token_id,
                 **model_kwargs,
             )
         elif generation_config.num_beams > 1:
@@ -1572,9 +1563,9 @@ class RagTokenForGeneration(RagPreTrainedModel):
                 input_ids,
                 beam_scorer,
                 logits_processor=pre_processor,
-                stopping_criteria=prepared_stopping_criteria,
-                generation_config=generation_config,
-                synced_gpus=False,
+                max_length=generation_config.max_length,
+                pad_token_id=generation_config.pad_token_id,
+                eos_token_id=generation_config.eos_token_id,
                 **model_kwargs,
             )
         else:

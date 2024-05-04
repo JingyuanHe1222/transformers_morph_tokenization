@@ -90,20 +90,6 @@ class BigBirdPegasusLearnedPositionalEmbedding(nn.Embedding):
         return super().forward(positions)
 
 
-# Copied from transformers.models.bart.modeling_bart.BartScaledWordEmbedding with Bart->BigBirdPegasus
-class BigBirdPegasusScaledWordEmbedding(nn.Embedding):
-    """
-    This module overrides nn.Embeddings' forward by multiplying with embeddings scale.
-    """
-
-    def __init__(self, num_embeddings: int, embedding_dim: int, padding_idx: int, embed_scale: Optional[float] = 1.0):
-        super().__init__(num_embeddings, embedding_dim, padding_idx)
-        self.embed_scale = embed_scale
-
-    def forward(self, input_ids: torch.Tensor):
-        return super().forward(input_ids) * self.embed_scale
-
-
 # Copied from transformers.models.big_bird.modeling_big_bird.BigBirdSelfAttention with BigBird->BigBirdPegasus
 class BigBirdPegasusSelfAttention(nn.Module):
     def __init__(self, config):
@@ -1763,11 +1749,9 @@ class BigBirdPegasusEncoder(BigBirdPegasusPreTrainedModel):
         embed_dim = config.d_model
         self.padding_idx = config.pad_token_id
         self.max_source_positions = config.max_position_embeddings
-        embed_scale = math.sqrt(embed_dim) if config.scale_embedding else 1.0
+        self.embed_scale = math.sqrt(embed_dim) if config.scale_embedding else 1.0
 
-        self.embed_tokens = BigBirdPegasusScaledWordEmbedding(
-            config.vocab_size, embed_dim, self.padding_idx, embed_scale=embed_scale
-        )
+        self.embed_tokens = nn.Embedding(config.vocab_size, embed_dim, self.padding_idx)
 
         if embed_tokens is not None:
             self.embed_tokens.weight = embed_tokens.weight
@@ -1843,7 +1827,7 @@ class BigBirdPegasusEncoder(BigBirdPegasusPreTrainedModel):
             raise ValueError("You have to specify either input_ids or inputs_embeds")
 
         if inputs_embeds is None:
-            inputs_embeds = self.embed_tokens(input_ids)
+            inputs_embeds = self.embed_tokens(input_ids) * self.embed_scale
 
         embed_pos = self.embed_positions(input_shape)
 
@@ -2058,11 +2042,9 @@ class BigBirdPegasusDecoder(BigBirdPegasusPreTrainedModel):
         self.layerdrop = config.decoder_layerdrop
         self.padding_idx = config.pad_token_id
         self.max_target_positions = config.max_position_embeddings
-        embed_scale = math.sqrt(config.d_model) if config.scale_embedding else 1.0
+        self.embed_scale = math.sqrt(config.d_model) if config.scale_embedding else 1.0
 
-        self.embed_tokens = BigBirdPegasusScaledWordEmbedding(
-            config.vocab_size, config.d_model, self.padding_idx, embed_scale=embed_scale
-        )
+        self.embed_tokens = nn.Embedding(config.vocab_size, config.d_model, self.padding_idx)
 
         if embed_tokens is not None:
             self.embed_tokens.weight = embed_tokens.weight
@@ -2186,7 +2168,7 @@ class BigBirdPegasusDecoder(BigBirdPegasusPreTrainedModel):
         past_key_values_length = past_key_values[0][0].shape[2] if past_key_values is not None else 0
 
         if inputs_embeds is None:
-            inputs_embeds = self.embed_tokens(input_ids)
+            inputs_embeds = self.embed_tokens(input_ids) * self.embed_scale
 
         attention_mask = _prepare_4d_causal_attention_mask(
             attention_mask, input_shape, inputs_embeds, past_key_values_length
@@ -2310,10 +2292,7 @@ class BigBirdPegasusModel(BigBirdPegasusPreTrainedModel):
         super().__init__(config)
 
         padding_idx, vocab_size = config.pad_token_id, config.vocab_size
-        embed_scale = math.sqrt(config.d_model) if config.scale_embedding else 1.0
-        self.shared = BigBirdPegasusScaledWordEmbedding(
-            vocab_size, config.d_model, padding_idx, embed_scale=embed_scale
-        )
+        self.shared = nn.Embedding(vocab_size, config.d_model, padding_idx)
 
         self.encoder = BigBirdPegasusEncoder(config, self.shared)
         self.decoder = BigBirdPegasusDecoder(config, self.shared)

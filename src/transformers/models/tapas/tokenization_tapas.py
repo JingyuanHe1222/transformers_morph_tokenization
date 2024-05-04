@@ -24,7 +24,7 @@ import os
 import re
 import unicodedata
 from dataclasses import dataclass
-from typing import Callable, Dict, Generator, List, Optional, Tuple, Union
+from typing import Callable, Dict, Generator, List, Optional, Text, Tuple, Union
 
 import numpy as np
 
@@ -70,19 +70,19 @@ class TokenCoordinates:
 
 @dataclass
 class TokenizedTable:
-    rows: List[List[List[str]]]
+    rows: List[List[List[Text]]]
     selected_tokens: List[TokenCoordinates]
 
 
 @dataclass(frozen=True)
 class SerializedExample:
-    tokens: List[str]
+    tokens: List[Text]
     column_ids: List[int]
     row_ids: List[int]
     segment_ids: List[int]
 
 
-def _is_inner_wordpiece(token: str):
+def _is_inner_wordpiece(token: Text):
     return token.startswith("##")
 
 
@@ -2224,14 +2224,14 @@ class NumericValueSpan:
 
 @dataclass
 class Cell:
-    text: str
+    text: Text
     numeric_value: Optional[NumericValue] = None
 
 
 @dataclass
 class Question:
-    original_text: str  # The original raw question string.
-    text: str  # The question string after normalization.
+    original_text: Text  # The original raw question string.
+    text: Text  # The question string after normalization.
     numeric_spans: Optional[List[NumericValueSpan]] = None
 
 

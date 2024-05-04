@@ -34,6 +34,8 @@ except OptionalDependencyNotAvailable:
     pass
 else:
     _import_structure["tokenization_llama"] = ["LlamaTokenizer"]
+    # _import_structure["tokenization_llama_morph"] = ["LlamaMorphTokenizer"] ###
+    
 
 try:
     if not is_tokenizers_available():
@@ -76,6 +78,7 @@ if TYPE_CHECKING:
         pass
     else:
         from .tokenization_llama import LlamaTokenizer
+        # from .tokenization_llama_morph import LlamaMorphTokenizer
 
     try:
         if not is_tokenizers_available():

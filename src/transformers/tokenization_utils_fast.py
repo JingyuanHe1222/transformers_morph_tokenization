@@ -500,12 +500,50 @@ class PreTrainedTokenizerFast(PreTrainedTokenizerBase):
             stride=stride,
             pad_to_multiple_of=pad_to_multiple_of,
         )
+        
+        # self.unk_token = "<unk>"
+        
+        try: 
+            if self.morph: 
+                # print("has morph... ")
+                final_encodings = []
+                for sentence in batch_text_or_text_pairs: 
+                    encodings = []
+                    original_parts = sentence.split()
+                    
+                    for i in range(len(original_parts)): 
+                        # add space if needed -> avoid tokenizing and appending space to encodings 
+                        # somehow the first word is also prepended with space in the original tokenizer? 
+                        
+                        # only split if meet morph rules -> acts like a batch -> no space in between 
+                        result = self.morph_transform(original_parts[i]) # list
+                        # avoid itr adding space 
+                        if not result[0].startswith(' '): 
+                            result[0] = ' ' + result[0] # word start needs space 
+                        # print(result) ### 
+                        
+                        encoding = self._tokenizer.encode_batch(
+                            result,
+                            add_special_tokens=add_special_tokens,
+                            is_pretokenized=is_split_into_words,
+                        ) # list of encoding objects 
+                        
+                        # merge everything 
+                        encodings.extend(encoding) 
+                    # instance in the batch 
+                    final_encodings.append(EncodingFast.merge(encodings)) 
+                    
+                        
+                
+        except AttributeError: 
+            print("no morph attribute ")
 
-        encodings = self._tokenizer.encode_batch(
-            batch_text_or_text_pairs,
-            add_special_tokens=add_special_tokens,
-            is_pretokenized=is_split_into_words,
-        )
+            final_encodings = self._tokenizer.encode_batch(
+                batch_text_or_text_pairs,
+                add_special_tokens=add_special_tokens,
+                is_pretokenized=is_split_into_words,
+            )
+
 
         # Convert encoding to dict
         # `Tokens` has type: Tuple[
@@ -524,7 +562,7 @@ class PreTrainedTokenizerFast(PreTrainedTokenizerBase):
                 return_length=return_length,
                 verbose=verbose,
             )
-            for encoding in encodings
+            for encoding in final_encodings
         ]
 
         # Convert the output to have dict[list] from list[dict] and remove the additional overflows dimension

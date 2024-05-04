@@ -1470,12 +1470,6 @@ MUSICGEN_PRETRAINED_CONFIG_ARCHIVE_MAP = DeprecatedDict(
 
 MUSICGEN_PRETRAINED_MODEL_ARCHIVE_LIST = DeprecatedList(["facebook/musicgen-small"])
 
-MUSICGEN_MELODY_PRETRAINED_CONFIG_ARCHIVE_MAP = DeprecatedDict(
-    {"facebook/musicgen-melody": "https://huggingface.co/facebook/musicgen-melody/resolve/main/config.json"}
-)
-
-MUSICGEN_MELODY_PRETRAINED_MODEL_ARCHIVE_LIST = DeprecatedList(["facebook/musicgen-melody"])
-
 MVP_PRETRAINED_MODEL_ARCHIVE_LIST = DeprecatedList(
     [
         "RUCAIBox/mvp",
@@ -1521,14 +1515,6 @@ NYSTROMFORMER_PRETRAINED_CONFIG_ARCHIVE_MAP = DeprecatedDict(
 )
 
 NYSTROMFORMER_PRETRAINED_MODEL_ARCHIVE_LIST = DeprecatedList(["uw-madison/nystromformer-512"])
-
-OLMO_PRETRAINED_CONFIG_ARCHIVE_MAP = DeprecatedDict(
-    {
-        "allenai/OLMo-1B-hf": "https://huggingface.co/allenai/OLMo-1B-hf/resolve/main/config.json",
-        "allenai/OLMo-7B-hf": "https://huggingface.co/allenai/OLMo-7B-hf/resolve/main/config.json",
-        "allenai/OLMo-7B-Twin-2T-hf": "https://huggingface.co/allenai/OLMo-7B-Twin-2T-hf/resolve/main/config.json",
-    }
-)
 
 ONEFORMER_PRETRAINED_CONFIG_ARCHIVE_MAP = DeprecatedDict(
     {
@@ -2681,7 +2667,6 @@ CONFIG_ARCHIVE_MAP_MAPPING_NAMES = OrderedDict(
         ("nllb-moe", "NLLB_MOE_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("nystromformer", "NYSTROMFORMER_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("oneformer", "ONEFORMER_PRETRAINED_CONFIG_ARCHIVE_MAP"),
-        ("olmo", "OLMO_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("open-llama", "OPEN_LLAMA_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("openai-gpt", "OPENAI_GPT_PRETRAINED_CONFIG_ARCHIVE_MAP"),
         ("opt", "OPT_PRETRAINED_CONFIG_ARCHIVE_MAP"),

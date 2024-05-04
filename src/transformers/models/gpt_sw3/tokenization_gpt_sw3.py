@@ -186,6 +186,7 @@ class GPTSw3Tokenizer(PreTrainedTokenizer):
         return text
 
     def _tokenize(self, text: str, **kwargs) -> List[str]:
+        print("tokenize gpt sw3") ###
         text = self.preprocess_text(text)
         return self.sp_model.encode(text, out_type=str)
 
@@ -301,6 +302,12 @@ class GPTSw3Tokenizer(PreTrainedTokenizer):
         This chat template formats messages like an instant messenger chat log, with "User:" and "Bot:" strings
         preceding messages. BOS tokens are added between all messages.
         """
+        logger.warning_once(
+            "\nNo chat template is defined for this tokenizer - using the default template "
+            f"for the {self.__class__.__name__} class. If the default is not appropriate for "
+            "your model, please set `tokenizer.chat_template` to an appropriate template. "
+            "See https://huggingface.co/docs/transformers/main/chat_templating for more information.\n"
+        )
         return (
             "{{ eos_token }}{{ bos_token }}"
             "{% for message in messages %}"

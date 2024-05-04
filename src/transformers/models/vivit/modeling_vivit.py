@@ -387,7 +387,6 @@ class VivitPreTrainedModel(PreTrainedModel):
     base_model_prefix = "vivit"
     main_input_name = "pixel_values"
     supports_gradient_checkpointing = True
-    _no_split_modules = []
 
     def _init_weights(self, module):
         """Initialize the weights"""
